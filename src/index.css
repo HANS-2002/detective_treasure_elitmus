@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .mainDiv {
-    height: calc(100vh - 109px);
-  }
+  min-height: calc(100vh - 109px);
+}

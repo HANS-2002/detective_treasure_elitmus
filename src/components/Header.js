@@ -48,11 +48,10 @@ export default function Header() {
         </>
       ) : (
         <>
-          {/* Login ke baad profile pic chipka dena */}
           <nav className="flex items-center justify-between flex-wrap text-white bg-zinc-800 p-2">
             <div className="flex items-center flex-shrink-0 mr-6 ml-2">
               <span className="font-semibold text-xl tracking-tight">
-                <Link to="/">Teasure Hunt</Link>
+                <Link to="/">Sudoku Puzzle</Link>
               </span>
             </div>
             <div className="flex flex-row">

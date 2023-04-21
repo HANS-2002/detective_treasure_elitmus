@@ -1,25 +1,53 @@
 import { useEffect, useState } from "react";
-import { auth, db } from "../firebaseConfig";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig";
+import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 
-export default function Score(props) {
-  const email = props.email;
-  const [userDetails, setUserDetails] = useState({});
+export default function Score() {
+  const [users, setUsers] = useState([]);
+
   useEffect(() => {
-    const q = query(collection(db, "users"), where("email", "==", email));
+    const q = query(collection(db, "users"), orderBy("bestTime"), limit(8));
+
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        setUserDetails(data);
+        if (data.isAdmin === true) return;
+        let newData = users;
+        newData.push({
+          username: data.username,
+          bestTime: data.bestTime,
+        });
+        setUsers(newData);
       });
     });
-  }, [email]);
+  }, []);
+
   return (
     <>
-      <p>
-        Best Time:{" "}
-        {userDetails.bestTime === -1 ? "None" : userDetails.bestTime}
-      </p>
+      {/* Make the global leaderboard with columns as username, best time */}
+      <div className="mb-4">
+        <p className="font-bold text-center mt-4 text-red-500">
+          Global Leaderboard
+        </p>
+        <table className="table-auto">
+          <thead>
+            <tr>
+              <th className="px-4 py-2">Username</th>
+              <th className="px-4 py-2">Best Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user, index) => {
+              return (
+                <tr key={index}>
+                  <td className="border px-4 py-2">{user.username}</td>
+                  <td className="border px-4 py-2">{user.bestTime}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }
