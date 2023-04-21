@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Admin from "./components/Admin";
+import AdminUsers from "./components/AdminUsers";
+import AdminScores from "./components/AdminScores";
 import "./index.css";
 import { initFirebase } from "./firebaseConfig";
 import {
@@ -50,11 +51,21 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin",
+    path: "/admin/users",
     element: (
       <>
         <Header />
-        <Admin />
+        <AdminUsers />
+        <Footer />
+      </>
+    ),
+  },
+  {
+    path: "/admin/scores",
+    element: (
+      <>
+        <Header />
+        <AdminScores />
         <Footer />
       </>
     ),

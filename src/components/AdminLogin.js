@@ -32,7 +32,7 @@ export default function AdminLogin() {
         });
         signInWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-            navigate("/admin");
+            navigate("/admin/users");
           })
           .catch((error) => {
             const errorCode = error.code;
