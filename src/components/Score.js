@@ -24,7 +24,6 @@ export default function Score() {
 
   return (
     <>
-      {/* Make the global leaderboard with columns as username, best time */}
       <div className="mb-4">
         <p className="font-bold text-center mt-4 text-red-500">
           Global Leaderboard
