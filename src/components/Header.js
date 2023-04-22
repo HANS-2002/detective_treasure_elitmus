@@ -18,7 +18,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(loading){
+    if(loading || !user){
       return;
     }
     const q = query(collection(db, "users"), where("email", "==", user.email));
@@ -28,7 +28,7 @@ export default function Header() {
         setUserDetails(data);
       });
     });
-  }, [loading]);
+  }, [loading, user]);
 
   function handleLogoutClick() {
     signOut(auth)

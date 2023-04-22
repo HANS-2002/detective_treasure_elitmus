@@ -198,9 +198,9 @@ export default function Sudoku(props) {
   }, [time, hasWin]);
 
   function transformTime(time) {
-    let sec = time % 60;
-    let min = Math.floor(time / 60);
     let hr = Math.floor(time / 3600);
+    let min = Math.floor((time - hr * 3600) / 60);
+    let sec = time - hr * 3600 - min * 60;
     return `${hr < 10 ? "0" + hr : hr} hr ${min < 10 ? "0" + min : min} min ${
       sec < 10 ? "0" + sec : sec
     } sec`;
