@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { db } from "../firebaseConfig";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, query, getDocs, orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 export default function AdminUsers() {
   const [userData, updateUserData] = useState([]);
 
   useEffect(() => {
-    const q = query(collection(db, "users"));
+    const q = query(collection(db, "users"), orderBy("bestTime"));
     let newUserData = [...userData];
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
