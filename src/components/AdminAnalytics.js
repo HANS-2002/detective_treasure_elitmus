@@ -15,7 +15,7 @@ export default function AdminAnalytics() {
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data.isAdmin === false) {
+        if (data.isAdmin === false && data.bestTime !== -1) {
           let time = data.bestTime;
           if (time < 60) {
             newUserData[0]++;
@@ -30,7 +30,6 @@ export default function AdminAnalytics() {
           }
         }
       });
-      console.log(newUserData);
       updateBarData(newUserData);
     });
   }, []);

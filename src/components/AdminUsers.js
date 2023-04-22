@@ -12,7 +12,6 @@ export default function AdminUsers() {
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log(data);
         if (data.isAdmin === false) {
           let date = new Date(parseInt(data.startTime.seconds * 1000)).toUTCString();
           let userSinceDate = new Date(parseInt(data.userSince.seconds * 1000)).toUTCString();
@@ -25,11 +24,13 @@ export default function AdminUsers() {
           });
         }
       });
+      console.log(newUserData);
       updateUserData(newUserData);
     });
   }, []);
 
   function transformTime(time) {
+    if(time === -1) return "N/A";
     let hr = Math.floor(time / 3600);
     let min = Math.floor((time - hr * 3600) / 60);
     let sec = time - hr * 3600 - min * 60;
