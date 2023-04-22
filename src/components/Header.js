@@ -3,10 +3,32 @@ import { auth } from "../firebaseConfig";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { db } from "../firebaseConfig";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 export default function Header() {
   const [user, loading] = useAuthState(auth);
+  const [userDetails, setUserDetails] = useState({});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if(loading){
+      return;
+    }
+    const q = query(collection(db, "users"), where("email", "==", user.email));
+    getDocs(q).then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        setUserDetails(data);
+      });
+    });
+  }, [loading]);
 
   function handleLogoutClick() {
     signOut(auth)
@@ -51,7 +73,11 @@ export default function Header() {
           <nav className="flex items-center justify-between flex-wrap text-white bg-zinc-800 p-2">
             <div className="flex items-center flex-shrink-0 mr-6 ml-2">
               <span className="font-semibold text-xl tracking-tight">
-                <Link to="/">Sudoku Puzzle</Link>
+                {userDetails.isAdmin ? (
+                  "Sudoku Puzzle"
+                ) : (
+                  <Link to="/">Sudoku Puzzle</Link>
+                )}
               </span>
             </div>
             <div className="flex flex-row">

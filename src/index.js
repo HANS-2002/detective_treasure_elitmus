@@ -4,7 +4,6 @@ import App from "./App";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import AdminUsers from "./components/AdminUsers";
-import AdminScores from "./components/AdminScores";
 import "./index.css";
 import { initFirebase } from "./firebaseConfig";
 import {
@@ -15,6 +14,7 @@ import {
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
 import AdminLogin from "./components/AdminLogin";
+import AdminAnalytics from "./components/AdminAnalytics";
 
 initFirebase();
 
@@ -61,11 +61,11 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/scores",
+    path: "/admin/analytics",
     element: (
       <>
         <Header />
-        <AdminScores />
+        <AdminAnalytics />
         <Footer />
       </>
     ),

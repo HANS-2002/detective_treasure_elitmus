@@ -34,6 +34,7 @@ export default function Signup() {
           email: email,
           username: username,
           isAdmin: false,
+          userSince: Timestamp.now(),
           bestTime: -1,
           startTime: Timestamp.now(),
           savedGame: {
