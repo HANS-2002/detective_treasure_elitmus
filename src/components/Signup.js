@@ -8,6 +8,7 @@ import {
   getDocs,
   setDoc,
   doc,
+  Timestamp,
 } from "firebase/firestore";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +35,7 @@ export default function Signup() {
           username: username,
           isAdmin: false,
           bestTime: -1,
-          curSavedTime: -1,
+          startTime: Timestamp.now(),
           savedGame: {
             1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
             2: [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -45,6 +46,17 @@ export default function Signup() {
             7: [0, 0, 0, 0, 0, 0, 0, 0, 0],
             8: [0, 0, 0, 0, 0, 0, 0, 0, 0],
             9: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          },
+          gameBool: {
+            1: [false, false, false, false, false, false, false, false, false],
+            2: [false, false, false, false, false, false, false, false, false],
+            3: [false, false, false, false, false, false, false, false, false],
+            4: [false, false, false, false, false, false, false, false, false],
+            5: [false, false, false, false, false, false, false, false, false],
+            6: [false, false, false, false, false, false, false, false, false],
+            7: [false, false, false, false, false, false, false, false, false],
+            8: [false, false, false, false, false, false, false, false, false],
+            9: [false, false, false, false, false, false, false, false, false],
           },
         });
         createUserWithEmailAndPassword(auth, email, password)

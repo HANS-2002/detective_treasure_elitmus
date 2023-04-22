@@ -6,6 +6,7 @@ import {
   where,
   getDocs,
   updateDoc,
+  Timestamp,
 } from "firebase/firestore";
 import axios from "axios";
 
@@ -22,8 +23,20 @@ export default function Sudoku(props) {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
+  const [gameBool, setGameBool] = useState([
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false, false, false],
+  ]);
   const [userDetails, setUserDetails] = useState({});
   const [time, setTime] = useState(0);
+  const [hasWin, setHasWin] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "users"), where("email", "==", email));
@@ -32,10 +45,12 @@ export default function Sudoku(props) {
         const data = doc.data();
         setUserDetails(data);
         let newSudoku = [];
+        let newBoolGame = [];
         for (let i = 1; i <= 9; i++) {
           newSudoku.push(data.savedGame[i]);
+          newBoolGame.push(data.gameBool[i]);
         }
-        if (data.curSavedTime !== -1) setTime(data.curSavedTime);
+        setTime(parseInt(new Date().getTime() / 1000) - data.startTime.seconds);
         let count = 0;
         for (let i = 0; i < 9; i++) {
           for (let j = 0; j < 9; j++) {
@@ -48,29 +63,55 @@ export default function Sudoku(props) {
           axios
             .get("https://sugoku.onrender.com/board?difficulty=easy")
             .then((response) => {
-              setSudoku(response.data.board);
-              // console.log(response.data);
+              let board = response.data.board;
+              setSudoku(board);
+              let newBoolGame = [];
+              for (let i = 0; i < 9; i++) {
+                let row = [];
+                for (let j = 0; j < 9; j++) {
+                  if (board[i][j] !== 0) {
+                    row.push(true);
+                  } else {
+                    row.push(false);
+                  }
+                }
+                newBoolGame.push(row);
+              }
+              setGameBool(newBoolGame);
             });
           setSudoku(newSudoku);
-        } else setSudoku(newSudoku);
+        } else {
+          setSudoku(newSudoku);
+          setGameBool(newBoolGame);
+        }
       });
     });
   }, [email]);
 
-  function saveSudoku(sudokuBoard) {
+  function saveSudoku(sudokuBoard, GameBool, Time) {
     let savedGame = {};
+    let savedgameBool = {};
     for (let i = 1; i <= 9; i++) {
       savedGame[i] = sudokuBoard[i - 1];
+      savedgameBool[i] = GameBool[i - 1];
     }
     const q = query(collection(db, "users"), where("email", "==", email));
+    const storeData = !Time
+      ? {
+          savedGame: savedGame,
+          gameBool: savedgameBool,
+        }
+      : {
+          savedGame: savedGame,
+          gameBool: savedgameBool,
+          bestTime: Time,
+          startTime: Timestamp.now(),
+        };
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         setUserDetails(data);
-        updateDoc(doc.ref, {
-          savedGame: savedGame,
-          curSavedTime: time,
-        });
+        updateDoc(doc.ref, storeData);
       });
     });
   }
@@ -107,18 +148,80 @@ export default function Sudoku(props) {
         }
       }
     }
+    if (userDetails.bestTime === -1 || time < userDetails.bestTime) {
+      const q = query(collection(db, "users"), where("email", "==", email));
+      getDocs(q).then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          setUserDetails(data);
+          updateDoc(doc.ref, {
+            bestTime: time,
+          });
+        });
+      });
+    }
     return true;
+  }
+
+  function resetSudoku() {
+    let newSudoku = [];
+    let newBoolGame = [];
+    axios
+      .get("https://sugoku.onrender.com/board?difficulty=easy")
+      .then((response) => {
+        let board = response.data.board;
+        newSudoku = board;
+        setSudoku(board);
+        for (let i = 0; i < 9; i++) {
+          let row = [];
+          for (let j = 0; j < 9; j++) {
+            if (board[i][j] !== 0) {
+              row.push(true);
+            } else {
+              row.push(false);
+            }
+          }
+          newBoolGame.push(row);
+        }
+        saveSudoku(newSudoku, newBoolGame, time);
+        setGameBool(newBoolGame);
+        setTime(0);
+        setHasWin(false);
+      });
+  }
+
+  useEffect(() => {
+    if (!hasWin) {
+      const interval = setInterval(() => setTime(time + 1), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [time, hasWin]);
+
+  function transformTime(time) {
+    let sec = time % 60;
+    let min = Math.floor(time / 60);
+    let hr = Math.floor(time / 3600);
+    return `${hr < 10 ? "0" + hr : hr} hr ${min < 10 ? "0" + min : min} min ${
+      sec < 10 ? "0" + sec : sec
+    } sec`;
   }
 
   return (
     <>
+      {hasWin ? (
+        <h1 className="text-2xl font-bold mb-4">
+          You have finished the puzzle!
+        </h1>
+      ) : null}
       <p className="mb-4">
         <span className="font-bold">Current Time: </span>
-        {userDetails.curSavedTime === -1 ? "None" : userDetails.curSavedTime}
+        {transformTime(time)}
       </p>
       <p>
         <span className="font-bold">Best Time: </span>
-        {userDetails.bestTime === -1 ? "None" : userDetails.bestTime}
+        {userDetails.bestTime === -1
+          ? "None"
+          : transformTime(userDetails.bestTime)}
       </p>
       <div className="flex flex-col mt-4 mb-4">
         {sudoku.map((row, i) => {
@@ -131,25 +234,27 @@ export default function Sudoku(props) {
                     className={`
                     ${i % 3 === 2 && i !== 8 ? "border-b-4" : ""} 
                     ${j % 3 === 2 && j !== 8 ? "border-r-4" : ""}
-                    ${cell === 0 ? "text-blue-300" : "text-red-300"}
+                    ${gameBool[i][j] ? "text-red-300" : "text-lime-300"}
                     border
                     border-blue-300 p-2 m-0 w-8 h-8 text-center caret-transparent hover:cursor-pointer
                     `}
                     type="text"
                     maxLength={1}
                     onKeyDown={(e) => {
+                      if (gameBool[i][j]) return;
                       const key = e.key;
                       if (key === "Backspace") {
                         e.target.value = "";
                         let sudokuBoard = sudoku;
                         sudokuBoard[i][j] = 0;
-                        saveSudoku(sudokuBoard);
+                        saveSudoku(sudokuBoard, gameBool, null);
                         setSudoku(sudokuBoard);
                       } else if (key >= 1 && key <= 9) {
                         e.target.value = key;
                         let sudokuBoard = sudoku;
                         sudokuBoard[i][j] = parseInt(key);
-                        saveSudoku(sudokuBoard);
+                        saveSudoku(sudokuBoard, gameBool, null);
+                        setHasWin(sudokuWinnerChecker());
                         setSudoku(sudokuBoard);
                       }
                     }}
@@ -162,26 +267,14 @@ export default function Sudoku(props) {
           );
         })}
       </div>
-      {/* <div className="flex flex-row mt-4">
+      <div className="flex flex-row mt-4">
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
           onClick={resetSudoku}
         >
-          Reset
+          {hasWin ? "Play Again" : "Reset"}
         </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => {
-            if (sudokuWinnerChecker()) {
-              alert("You Won!");
-            } else {
-              alert("You Lost!");
-            }
-          }}
-        >
-          Check
-        </button>
-      </div> */}
+      </div>
     </>
   );
 }
