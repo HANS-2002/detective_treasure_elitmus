@@ -88,7 +88,7 @@ export default function Sudoku(props) {
     });
   }, [email]);
 
-  function saveSudoku(sudokuBoard, GameBool, Time) {
+  function saveSudoku(sudokuBoard, GameBool) {
     let savedGame = {};
     let savedgameBool = {};
     for (let i = 1; i <= 9; i++) {
@@ -96,17 +96,11 @@ export default function Sudoku(props) {
       savedgameBool[i] = GameBool[i - 1];
     }
     const q = query(collection(db, "users"), where("email", "==", email));
-    const storeData = !Time
-      ? {
-          savedGame: savedGame,
-          gameBool: savedgameBool,
-        }
-      : {
-          savedGame: savedGame,
-          gameBool: savedgameBool,
-          bestTime: Time,
-          startTime: Timestamp.now(),
-        };
+    const storeData = {
+      savedGame: savedGame,
+      gameBool: savedgameBool,
+      startTime: Timestamp.now(),
+    };
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
@@ -183,7 +177,7 @@ export default function Sudoku(props) {
           }
           newBoolGame.push(row);
         }
-        saveSudoku(newSudoku, newBoolGame, time);
+        saveSudoku(newSudoku, newBoolGame, null);
         setGameBool(newBoolGame);
         setTime(0);
         setHasWin(false);
@@ -247,13 +241,13 @@ export default function Sudoku(props) {
                         e.target.value = "";
                         let sudokuBoard = sudoku;
                         sudokuBoard[i][j] = 0;
-                        saveSudoku(sudokuBoard, gameBool, null);
+                        saveSudoku(sudokuBoard, gameBool);
                         setSudoku(sudokuBoard);
                       } else if (key >= 1 && key <= 9) {
                         e.target.value = key;
                         let sudokuBoard = sudoku;
                         sudokuBoard[i][j] = parseInt(key);
-                        saveSudoku(sudokuBoard, gameBool, null);
+                        saveSudoku(sudokuBoard, gameBool);
                         setHasWin(sudokuWinnerChecker());
                         setSudoku(sudokuBoard);
                       }
